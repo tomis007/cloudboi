@@ -4,10 +4,8 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.Path;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.*;
 
 import main.java.gameboi.GameBoi;
 
@@ -18,25 +16,30 @@ import javax.websocket.OnOpen;
 import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
+//TODO Logging
 //import org.apache.juli.logging.Log;
 //import org.apache.juli.logging.LogFactory;
 
 @ServerEndpoint(value = "/stream")
 public class GameBoiSocket {
 
-    //private static final Log log = LogFactory.getLog(ChatAnnotation.class);
     private Session session;
+    //TODO add executor connections to connections set
     private static final Set<GameBoiSocket> connections = new CopyOnWriteArraySet<>();
-    private int test;
+    private static final ScheduledExecutorService executor =
+            Executors.newScheduledThreadPool(5);
+    private static final ScheduledThreadPoolExecutor exec_threadPool =
+            (ScheduledThreadPoolExecutor)executor;
     private GameBoi gboi;
     private ByteBuffer buffer;
-
+    private ScheduledFuture<?> scheduledFuture;
 
     public GameBoiSocket() {
         gboi = new GameBoi();
         buffer = ByteBuffer.allocate(23040);
         buffer.position(0);
-        test = 0;
+        //TODO better place for this?
+        exec_threadPool.setRemoveOnCancelPolicy(true);
     }
 
 
@@ -46,46 +49,66 @@ public class GameBoiSocket {
         gboi.loadRom(tetris);
         this.session = session;
         connections.add(this);
+        scheduledFuture = executor.scheduleAtFixedRate(() ->
+                          sendFrame(), 0, 17, TimeUnit.MILLISECONDS);
+    }
+
+    /**
+     *
+     * sends one frame to the client
+     */
+    private void sendFrame() {
+        buffer.position(0);
+        gboi.drawFrameToBuffer(buffer);
+        buffer.position(0);
         try {
             session.getBasicRemote().sendBinary(buffer);
-            while (true) {
-                buffer.position(0);
-                session.getBasicRemote().sendBinary(buffer);
-                try {
-                    Thread.sleep(16);
-                } catch(InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                }
-                gboi.drawFrameToBuffer(buffer);
-            }
-        } catch (IOException e) {
-            test += 1;
+        } catch(IOException ex) {
+            System.err.println("Error sending frame");
         }
-        test += 1;
     }
 
 
     @OnClose
     public void end() {
         connections.remove(this);
+        //stop the thread from running sendFrame
+        scheduledFuture.cancel(true);
     }
 
 
     @OnMessage
     public void incoming(String message) {
-        // Never trust the client
+        int key_num;
         try {
-            session.getBasicRemote().sendText(message);
-        } catch (IOException e) {
-            test += 1;
+            key_num = Integer.parseInt(message);
+        } catch (NumberFormatException e) {
+            key_num = -1;
+        }
+
+        if (key_num >= 0 && key_num <= 7) {
+            //TODO doesnt seem to be registering after a second???
+            gboi.keyPressed(key_num);
+        } else if (key_num >= 8 && key_num <= 15) {
+            gboi.keyReleased(key_num - 8);
+        } else if (key_num == 16) {
+            pauseGame();
+        } else if (key_num == 17) {
+            resumeGame();
         }
     }
 
 
+    private void resumeGame() {
+
+    }
+    private void pauseGame() {
+
+    }
 
 
     @OnError
     public void onError(Throwable t) throws Throwable {
-        //log.error("Chat Error: " + t.toString(), t);
+        System.err.println(t.toString());
     }
 }
