@@ -2,11 +2,14 @@
 $(document).ready(function () {
     FastClick.attach(document.body);
     $('body').bind('touchmove', function(e){e.preventDefault()})
+    var roms = [];
+    var saves = [];
+    var users = [];
+    var slots = 5;
+    var current_user = "";
+    updateCloudBoiInfo();
     var elem = document.getElementById("menu");
     alertify.parent(elem);
-    var name1 = "Links_Awakening.gb";
-    var name2 = "Kirbys_Dreamland.gb";
-    var selectedRom = name1;
 
     //size the controls to fill page
     var new_height = $(window).height() - 288;
@@ -17,8 +20,10 @@ $(document).ready(function () {
     //websocket stuff
     var ws = new WebSocket("ws://" + location.host + "/CloudBoi/stream");
     ws.binaryType = 'arraybuffer';
+
+    //start the game
     ws.onopen = function() {
-        console.log("Starting the game");
+        showInitialMenu();
     };
     
     // called when a message received from server
@@ -114,6 +119,21 @@ $(document).ready(function () {
         ws.send("13");
     });  
 
+    function updateCloudBoiInfo() {
+        $.post('/CloudBoi/API', {info:"roms"}).done(function (data){
+            roms = data.info;
+        });
+        $.post('/CloudBoi/API', {info:"saves"}).done(function (data){
+            saves = data.info;
+        });
+        $.post('/CloudBoi/API', {info:"users"}).done(function (data){
+            users = data.info;
+        });
+        $.post('/CloudBoi/API', {info:"slots"}).done(function (data) {
+            console.log(data.info[0]);
+            slots = data.info[0];
+        })
+    }
 
     function translateUp(key) {
         switch (key) {
@@ -129,14 +149,80 @@ $(document).ready(function () {
         }
     }
 
-    function showMenu() {
+
+
+       function getUserMenu() {
+           console.log("getUserMenu");
+           bootbox.dialog({
+               title: "Select User",
+               message: getHTMLList(users),
+               buttons: {
+                       success: {
+                           label: "Continue",
+                           className: "btn-success",
+                           callback: function () {
+                               var user = $("input[name='item']:checked").val()
+                               console.log("You've chosen: " + user);
+                               setUser(user);
+                               current_user = user;
+                               showInitialMenu();
+                           }
+                       }
+                   },
+               onEscape: function () {getUserMenu(); }
+               }
+           );
+       }
+
+    function showInitialMenu() {
+        updateCloudBoiInfo();
         bootbox.dialog({
-            title: "GameBoi Menu",
+            title: "Load Game",
+            message: "Select User First, then Select a Rom or a Save",
+            buttons: {
+                user: {
+                    label: "Set User",
+                    className: "btn-primary",
+                    callback: function() {
+                        getUserMenu();
+                    }
+                },
+                loadR: {
+                    label: "LoadRom",
+                    className: "btn-primary",
+                    callback: function() {
+                        if (current_user === "") {
+                            showInitialMenu();
+                        } else {
+                            loadRom();
+                        }
+                    }
+                },
+                loadS: {
+                    label: "LoadSave",
+                    className: "btn-primary",
+                    callback: function() {
+                        if (current_user === "") {
+                            showInitialMenu();
+                        } else {
+                            loadSave();
+                        }
+                    }
+                },
+            },
+            onEscape: function () { showInitialMenu(); }
+        });
+    }
+
+    function showMenu() {
+        updateCloudBoiInfo();
+        bootbox.dialog({
+            title: "CloudBoi Menu",
             message: "Select Option",
             buttons: {
                 resume: {
                     label: "Resume",
-                    className: "btn-primary",
+                    //className: "btn-primary",
                     callback: function() { resumeGame(); }
                 },
                 save: {
@@ -144,9 +230,15 @@ $(document).ready(function () {
                    className: "btn-success",
                    callback: function() { saveGame(); }
                 },
-                load: {
-                    label: "Load",
-                    callback: function() {loadGame();}
+                loadR: {
+                    label: "LoadRom",
+                    className: "btn-primary",
+                    callback: function() { loadRom(); }
+                },
+                loadS: {
+                    label: "LoadSave",
+                    className: "btn-primary",
+                    callback: function() { loadSave(); }
                 },
                 quit: {
                   label: "Quit",
@@ -157,7 +249,6 @@ $(document).ready(function () {
            onEscape: function () { resumeGame(); }
         });        
     }
-
 
 
     function pauseGame() {
@@ -173,23 +264,19 @@ $(document).ready(function () {
     function saveGame() {
         bootbox.dialog({
             title: "Select Slot",
-            message: '<div class="form-group"> ' +
-                     '<div class="col-md-4"> <div class="radio"> <label for="slot1"> ' +
-                     '<input type="radio" name="slot" id="slot1" value="slot1">slot1</label> ' +
-                    '</div>' +
-                    '<div class="radio"> <label for="slot2"> ' +
-                    '<input type="radio" name="slot" id="slot2" value="slot2">slot2</label> ' +
-                    '</div> ' +
-                    '</div> </div>',
+            message: getSaveSlots(),
             buttons: {
                     success: {
                         label: "Save",
                         className: "btn-success",
                         callback: function () {
-                            var answer = $("input[name='slot']:checked").val()
+                            var answer = $("input[name='item']:checked").val()
                             console.log("You've chosen: " + answer);
-                            alertify.delay(2000).success("Saved Game!");
+                            gbSaveGame(answer);
+                            //alertify.delay(2000).success("Saved Game!");
                             resumeGame();
+                            alertify.delay(2000).success("Saved Game!");
+
                         }
                     }
                 },
@@ -201,32 +288,79 @@ $(document).ready(function () {
         );
     }
 
-    function loadGame() {
-    bootbox.dialog({
-                title: "Load ROM",
-                message: '<div class="form-group"> ' +
-                    '<div class="col-md-4"> <div class="radio"> <label for="' + name1 +  '"> ' +
-                    '<input type="radio" name="rom" id="' + name1 + '" value="' + name1 + '"> ' +
-                    name1 + '</label> ' +
-                    '</div><div class="radio"> <label for="' + name2 + '"> ' +
-                    '<input type="radio" name="rom" id="' + name2 + '" value="' + name2 + '">'+ name2 + '</label> ' +
-                    '</div> ' +
-                    '</div> </div>',
-                buttons: {
-                    success: {
-                        label: "Load",
-                        className: "btn-success",
-                        callback: function () {
-                            var answer = $("input[name='rom']:checked").val()
-                            console.log("You've chosen: " + answer);
-                        }
-                    }
-                }
-            }
-        );
 
+
+
+    function getSaveSlots() {
+        slot_list = [];
+        var i = 0;
+        for (i = 0; i < slots; ++i) {
+            slot_list.push("slot " + i);
+        }
+        return getHTMLList(slot_list);
     }
 
+    function loadRom() {
+        bootbox.dialog({
+                title: "Load ROM",
+                message: getHTMLList(roms),
+                buttons: {
+                    success: {
+                        label: "LoadRom",
+                        className: "btn-success",
+                        callback: function () {
+                            var romname = $("input[name='item']:checked").val()
+                            console.log("You've chosen: " + romname);
+                            gbLoadRom(romname);
+                        }
+                    }
+                },
+                onEscape: function() {showInitialMenu(); }
+            });
+    }
+
+    function gbLoadRom(rom) {
+        ws.send("loadRom:" + rom);
+        resumeGame();
+    }
+
+    function gbLoadSave(save) {
+        ws.send("loadSave:" + save.slice(-1));
+        resumeGame();
+    }
+
+    function loadSave() {
+        bootbox.dialog({
+                    title: "Load Save",
+                    message: getHTMLList(saves),
+                    buttons: {
+                        success: {
+                            label: "LoadSave",
+                            className: "btn-success",
+                            callback: function () {
+                                var savename = $("input[name='item']:checked").val()
+                                console.log("You've chosen: " + savename);
+                                gbLoadSave(savename);
+                            }
+                        }
+                    },
+                    onEscape: function() {showInitialMenu(); }
+                });
+    }
+
+    function getHTMLList(items) {
+        innerList = '';
+        for (i = 0; i < items.length; ++i) {
+            innerList += '<div class="radio">' +
+                             '<label for="' + items[i] + '">' +
+                                 '<input type="radio" name="item" id="' + items[i] + '" value="' + items[i] + '"> ' + items[i] +
+                             '</label> ' +
+                         '</div>';
+        }
+        return '<div class="form-group">' +
+                   '<div class="col-md-4">' + innerList + '</div>' +
+               '</div>';
+    }
 
     function quitGame() {
         bootbox.confirm("Quit without saving?", function(result) {
@@ -238,6 +372,15 @@ $(document).ready(function () {
         });
     }
 
+    function gbSaveGame(slot) {
+        ws.send("save:" + slot.slice(-1));
+    }
+
+
+    function setUser(user) {
+        current_user = user;
+        ws.send("set:" + user);
+    }
 
     function translateDown(key) {
         switch (key) {
@@ -253,7 +396,7 @@ $(document).ready(function () {
         }
     }
 
-    //render recieved frame onto screen
+    //render received frame onto screen
     function updateCanvas(gbstream) {
         var dv = new DataView(gbstream);
         var canvas = document.getElementById("gamescreen");
