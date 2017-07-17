@@ -29,9 +29,6 @@ saves <- currently empty, where saves are stored
 5. Start CloudBoi: First select a user, then load a rom
 
 
-0. The deploy.sh script won't work, so use the .war
-
-
 ##### Notes
 Currently only .gb (gameboy NOT gameboy color) roms are supported,
 and only some of those work (most do). Saving is buggy, the GUI on
