@@ -201,7 +201,7 @@ public class GameBoiSocket {
         //check for actually being paused
         if (scheduledFuture == null || scheduledFuture.isCancelled()) {
             scheduledFuture = exec_threadPool.scheduleAtFixedRate(() ->
-                    sendFrame(), 0,17,TimeUnit.MILLISECONDS);
+                    sendFrame(), 0,33,TimeUnit.MILLISECONDS);
         }
     }
     private void pauseGame() {
