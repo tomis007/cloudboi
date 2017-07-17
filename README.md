@@ -22,7 +22,7 @@ vim users.txt # create a list of users (sample file in github repo)
 ```
 3.5 You should have the following subfolders in ~/.GBoi:
 ```
-roms <- contains roms to play
+roms <- contains roms to play, ENDING WITH .gb
 saves <- currently empty, where saves are stored
 ```
 4. Start tomcat, and navigate to YOUR_IP:8080/CloudBoi
