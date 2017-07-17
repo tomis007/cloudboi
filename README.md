@@ -20,9 +20,11 @@ mkdir roms saves
 cp {gameboy roms} roms/
 vim users.txt # create a list of users (sample file in github repo)
 ```
-3.5 You should have the following subfolders in ~/.GBoi
-        roms <- contains roms to play
-        saves <- currently empty, where saves are stored
+3.5 You should have the following subfolders in ~/.GBoi:
+```
+roms <- contains roms to play
+saves <- currently empty, where saves are stored
+```
 4. Start tomcat, and navigate to YOUR_IP:8080/CloudBoi
 5. Load your roms
 
