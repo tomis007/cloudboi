@@ -11,7 +11,7 @@ This has been tested on a raspberry pi 3 running raspbian with java8.
 
 
 #### Installation
-1. Install tomcat 
+1. Install tomcat and Java 8
 2. Copy CloudBoi.war to $CATALINA_HOME/webapps/
 3. Create home directory and import roms: 
 ```
