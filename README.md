@@ -26,7 +26,7 @@ roms <- contains roms to play
 saves <- currently empty, where saves are stored
 ```
 4. Start tomcat, and navigate to YOUR_IP:8080/CloudBoi
-5. Load your roms
+5. Start CloudBoi: First select a user, then load a rom
 
 
 0. The deploy.sh script won't work, so use the .war
