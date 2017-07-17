@@ -6,10 +6,10 @@ Provides a front end to: https://www.github.com/tomis007/gameboi
 
 ### Status
 This "works", but is fairly buggy. It is being updated as I have time.
+Don't use deploy.sh, it won't work. This only supports gameboy roms.
 
 
 #### Installation
-0. The deploy.sh script won't work, unless you download the gameboi src and install it as a local mvn package, so use the .war
 1. Install tomcat 
 2. Copy CloudBoi.war to $CATALINA_HOME/webapps/
 3. Create home directory and import roms: 
@@ -23,6 +23,8 @@ vim users.txt # create a list of users (sample file in github repo)
 4. Start tomcat, and navigate to IP:8080/CloudBoi
 5. Load your roms
 
+
+0. The deploy.sh script won't work, so use the .war
 
 
 ##### Notes
