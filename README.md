@@ -7,6 +7,7 @@ Provides a front end to: https://www.github.com/tomis007/gameboi
 ### Status
 This "works", but is fairly buggy. It is being updated as I have time.
 Don't use deploy.sh, it won't work. This only supports gameboy roms.
+This has been tested on a raspberry pi 3 running raspbian with java8.
 
 
 #### Installation
