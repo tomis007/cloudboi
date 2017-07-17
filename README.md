@@ -25,7 +25,7 @@ vim users.txt # create a list of users (sample file in github repo)
 roms <- contains roms to play, ENDING WITH .gb
 saves <- currently empty, where saves are stored
 ```
-4. Start tomcat, and navigate to YOUR_IP:8080/CloudBoi
+4. Start tomcat, and navigate to {localhost | YOUR_IP}:8080/CloudBoi
 5. Start CloudBoi: First select a user, then load a rom
 
 
