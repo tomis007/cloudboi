@@ -21,9 +21,12 @@ import javax.websocket.Session;
 import javax.websocket.server.ServerEndpoint;
 
 //TODO Logging
-//import org.apache.juli.logging.Log;
-//import org.apache.juli.logging.LogFactory;
 
+/**
+ * GameBoiSocket
+ *
+ * Streams a GameBoi over a websocket to a client
+ */
 @ServerEndpoint(value = "/stream")
 public class GameBoiSocket {
 
@@ -42,7 +45,7 @@ public class GameBoiSocket {
 
     public GameBoiSocket() {
         gboi = new GameBoi();
-        buffer = ByteBuffer.allocate(23040);
+        buffer = ByteBuffer.allocate(69120);
         buffer.position(0);
         //TODO better place for this?
         exec_threadPool.setRemoveOnCancelPolicy(true);
@@ -115,7 +118,6 @@ public class GameBoiSocket {
         } else {
             //Command event
             String[] command = message.split(":");
-            System.err.println(command[0] + " " + command[1]);
             switch(command[0]) {
                 case "save":
                     saveGame(Integer.parseInt(command[1]));
@@ -136,6 +138,12 @@ public class GameBoiSocket {
     }
 
 
+    /**
+     *
+     * Saves the game as "user"+slot#
+     *
+     * @param slot to save the game
+     */
     private void saveGame(int slot) {
         pauseGame();
         if (slot < SAVESLOTNUM && slot >= 0) {
@@ -146,6 +154,13 @@ public class GameBoiSocket {
         }
     }
 
+    /**
+     *
+     * Load a save for the current user
+     * Slot: 1 - SAVESLOTNUM
+     *
+     * @param slot to save in
+     */
     private void loadSave(int slot) {
         pauseGame();
         if (slot <= SAVESLOTNUM && slot >= 0 && gboi.getSaves().contains(user + Integer.toString(slot) + ".gbs")) {
@@ -166,13 +181,13 @@ public class GameBoiSocket {
         if (gboi.getRoms().contains(romName + ".gb")) {
             gboi = new GameBoi();
             gboi.loadRom(romName);
-            System.err.println("loaded");
+            System.err.println("loaded " + romName);
             resumeGame();
         }
     }
 
     /**
-     *
+     * Set the current user
      *
      * @param user to attempt to set to
      */
@@ -197,6 +212,10 @@ public class GameBoiSocket {
     }
 
 
+    /**
+     * Resume the scheduled executor service
+     *
+     */
     private void resumeGame() {
         //check for actually being paused
         if (scheduledFuture == null || scheduledFuture.isCancelled()) {
@@ -204,6 +223,11 @@ public class GameBoiSocket {
                     sendFrame(), 0,33,TimeUnit.MILLISECONDS);
         }
     }
+
+    /**
+     *
+     *  Stop the scheduled executor
+     */
     private void pauseGame() {
         //stop the streaming of the frames
         if (scheduledFuture != null) {
@@ -216,4 +240,5 @@ public class GameBoiSocket {
     public void onError(Throwable t) throws Throwable {
         System.err.println(t.toString());
     }
+
 }
