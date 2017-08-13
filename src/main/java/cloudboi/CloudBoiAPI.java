@@ -13,7 +13,6 @@ import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.io.File;
 import java.nio.file.Paths;
 import java.util.List;
 import main.java.cloudboi.GameBoiSocket;
@@ -25,6 +24,15 @@ public class CloudBoiAPI extends HttpServlet {
     private static final GameBoi gb = new GameBoi();
     private static final Path home = gb.getHome();
 
+    /**
+     *
+     * API for getting current status of game/roms available to load
+     *
+     * @param request
+     * @param response
+     * @throws ServletException
+     * @throws IOException
+     */
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String info = request.getParameter("info");
