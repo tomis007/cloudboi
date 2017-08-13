@@ -431,13 +431,18 @@ $(document).ready(function () {
 
         for (var row = 0; row < 144; row++) {
             for (var col = 0; col < 160; col++) {
-                var index = (row * 160) + col;
-                switch (dv.getInt8(index)) {
-                    case 0: drawPixel(canvasData, col, row, 255, 255, 255, 255); break;
-                    case 1: drawPixel(canvasData, col, row, 192, 192, 192, 255); break;
-                    case 2: drawPixel(canvasData, col, row, 96, 96, 96, 255); break;
-                    case 3: drawPixel(canvasData, col, row, 0, 0, 0, 255); break;
-                }
+                var index = (row * 160 * 3) + (col * 3);
+                var b = dv.getUint8(index);
+                var g = dv.getUint8(index + 1);
+                var r = dv.getUint8(index + 2);
+                drawPixel(canvasData, col, row, r, g, b, 255);
+
+                //switch (dv.getInt8(index)) {
+                //    case 0: drawPixel(canvasData, col, row, 255, 255, 255, 255); break;
+                //    case 1: drawPixel(canvasData, col, row, 192, 192, 192, 255); break;
+                //    case 2: drawPixel(canvasData, col, row, 96, 96, 96, 255); break;
+                //    case 3: drawPixel(canvasData, col, row, 0, 0, 0, 255); break;
+                //}
             }
         }
         ctx.putImageData(canvasData, 0, 0);
