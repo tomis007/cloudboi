@@ -41,7 +41,7 @@ restart the server, this will also get fixed eventually.
 ##### Screenshot (safari on an iphone 6)
 ![alt text][pkmgold]
 
-[pkmgold]: https://github.com/tomis007/cloudboi/blog/master/screenshots/pkmgold.png
+[pkmgold]: https://github.com/tomis007/cloudboi/blob/master/screenshots/pkmgold.png
 
 
 
