@@ -38,5 +38,12 @@ get updated eventually. There is currently a chance the web app might
 just crash if an untested rom is loaded or something weird happens. Just 
 restart the server, this will also get fixed eventually.
 
+##### Screenshot (safari on an iphone 6)
+![alt text][pkmgold]
+
+[pkmgold]: https://github.com/tomis007/cloudboi/blog/master/screenshots/pkmgold.png
+
+
+
 
 
