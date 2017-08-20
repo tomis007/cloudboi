@@ -16,8 +16,8 @@ $(document).ready(function () {
     $('#controls').css('height', new_height.toString());
     $('#controls').css('display', 'inline-block');
 
-    //websocket stuff
-    var ws = new WebSocket("ws://" + location.host + "/CloudBoi/stream");
+    //build the websocket url
+    var ws = new WebSocket("ws://" + location.host + window.location['pathname'] + "stream");
     ws.binaryType = 'arraybuffer';
 
     //start the game
@@ -51,7 +51,7 @@ $(document).ready(function () {
         var press = translateUp(e.which)
         if (press != "invalid press") {
             ws.send(press);
-        }        
+        }
     });
 
     //touch controls
@@ -88,14 +88,14 @@ $(document).ready(function () {
     });
     $("#down").on('mouseup touchend', function(e) {
         ws.send("11");
-    });    
+    });
 
     $("#select").on('mousedown touchstart', function(e) {
         ws.send("6");
     });
     $("#select").on('mouseup touchend', function(e) {
         ws.send("14");
-    }); 
+    });
 
     $("#start").on('mousedown touchstart', function(e) {
         ws.send("7");
@@ -109,14 +109,14 @@ $(document).ready(function () {
     });
     $("#jpA").on('mouseup touchend', function(e) {
         ws.send("12");
-    });     
+    });
 
     $("#jpB").on('mousedown touchstart', function(e) {
         ws.send("5");
     });
     $("#jpB").on('mouseup touchend', function(e) {
         ws.send("13");
-    });  
+    });
 
     /*
      * update the info from backend API
@@ -124,16 +124,16 @@ $(document).ready(function () {
      *
      */
     function updateCloudBoiInfo() {
-        $.post('/CloudBoi/API', {info:"roms"}).done(function (data){
+        $.post(window.location['pathname'] + 'API', {info:"roms"}).done(function (data){
             roms = data.info;
         });
-        $.post('/CloudBoi/API', {info:"saves"}).done(function (data){
+        $.post(window.location['pathname'] + 'API', {info:"saves"}).done(function (data){
             saves = data.info;
         });
-        $.post('/CloudBoi/API', {info:"users"}).done(function (data){
+        $.post(window.location['pathname'] + 'API', {info:"users"}).done(function (data){
             users = data.info;
         });
-        $.post('/CloudBoi/API', {info:"slots"}).done(function (data) {
+        $.post(window.location['pathname'] + 'API', {info:"slots"}).done(function (data) {
             console.log(data.info[0]);
             slots = data.info[0];
         })
@@ -255,7 +255,7 @@ $(document).ready(function () {
                 }
             },
             onEscape: function () { resumeGame(); }
-        });        
+        });
     }
 
 
